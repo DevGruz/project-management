@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package user;
+
+service User {
+    rpc CreateUser (CreateUserRequest) returns (UserResponse);
+    rpc GetUserById (GetUserByIdRequest) returns (UserResponse);
+    rpc GetUserByEmail (GetUserByEmailRequest) returns (UserResponse);
+    rpc GetUserFromJWT (TokenRequest) returns (UserResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+    rpc UserAuthentication (UserAuthenticationRequest) returns (UserResponse);
+}
+
+message CreateUserRequest {
+    string email = 1;
+    string password = 2;
+    string first_name = 3;
+    string last_name = 4;
+}
+
+message CreateUserResponse {
+}
+
+message TokenRequest {
+    string access_token = 1;
+    string token_type = 2;
+}
+
+message UserAuthenticationRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message GetUserByIdRequest {
+    string id = 1;
+}
+
+message GetUserByEmailRequest {
+    string email = 1;
+}
+
+message UpdateUserRequest {
+    string email = 1;
+    string password = 2;
+    string first_name = 3;
+    string last_name = 4;
+}
+
+message UserResponse {
+    string id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    bool is_active = 5;
+}
+

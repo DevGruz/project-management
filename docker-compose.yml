@@ -1,0 +1,88 @@
+version: "3"
+
+services:
+  api-gateway:
+    build:
+      context: ./microservices/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - user-service
+      - auth-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./microservices/api-gateway:/app
+    networks:
+      - user-network
+
+  user-service:
+    build:
+      context: ./microservices/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: on-failure
+    depends_on:
+      - user-service-db
+    
+    # command: alembic revision --autogenerate -m "initial migration" && alembic upgrade head
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./microservices/user-service:/app
+    networks:
+      - user-network
+    
+
+  user-service-db:
+    image: postgres:13
+    restart: always
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=user-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-service-db-data:/var/lib/postgresql/data
+    networks:
+      - user-network
+
+  auth-service:
+    build:
+      context: ./microservices/authentication-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: on-failure
+    # depends_on:
+    #   - user-service-db
+    
+    # command: alembic revision --autogenerate -m "initial migration" && alembic upgrade head
+    ports:
+      - "50052:50052"
+    volumes:
+      - ./microservices/authentication-service:/app
+    networks:
+      - user-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "80:80"
+    depends_on:
+      - user-service-db
+    networks:
+      - user-network
+
+networks:
+  user-network:
+    driver: bridge
+
+volumes:
+  user-service-db-data:
+    driver: local
